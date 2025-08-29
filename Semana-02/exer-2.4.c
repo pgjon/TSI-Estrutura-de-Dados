@@ -13,10 +13,10 @@
     9 2        4.5
     10 0       Divisão por zero
 */
-# include <stdio.h>
-# include <locale.h>
+#include <stdio.h>
+#include <locale.h>
 
-float calcDivisao(int num1, int num2);
+int calcDivisao(int num1, int num2, float *resultado);
 
 int main(){
     setlocale(LC_ALL, "pt_BR.UTF-8");
@@ -24,35 +24,33 @@ int main(){
     // Variables
     int N, i, num1, num2, codigo;
     float resultado;
+    
     // Inputs
-    printf("Digite um valor N, para ler n duplas de números: "); scanf("%d", &N);
+    printf("Digite um valor N: "); 
+    scanf("%d", &N);
 
     // Processing
     for (i = 0; i < N; i++) {
-        resultado = 0;
         printf("Digite primeiro valor: "); scanf("%d", &num1);
         printf("Digite segundo valor: "); scanf("%d", &num2);
 
-        codigo = calcDivisao(num1, num2);
+        codigo = calcDivisao(num1, num2, &resultado);
 
-        if ((codigo == 1) && (num2 == 0)) {
-            printf("Divisão por 0");
+        if (codigo == 1) {
+            printf("Divisão por zero\n");
         } else {
-            resultado = calcDivisao(num1, num2);
-
-            printf("%.2f\n", resultado);
+            printf("%.1f\n", resultado);
         }
     }
-    // Outputs
 
     return 0;
 }
 
-float calcDivisao(int num1, int num2) {
-
-    if (num2 == 0){
-        return 1;
+int calcDivisao(int num1, int num2, float *resultado) {
+    if (num2 == 0) {
+        return 1;  // Código de erro
     } else {
-        return (float) num1 / num2;
+        *resultado = (float) num1 / num2;
+        return 0;  // Código de sucesso
     }
 }
