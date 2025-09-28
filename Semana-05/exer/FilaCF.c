@@ -2,6 +2,15 @@
 #include <stdlib.h>
 #include "FilaCF.h"
 
+// exibe tracos
+void exibeTracos() {
+    int i;
+    for (i = 1; i <= 75; i++) {
+        printf("-");
+    }
+    printf("\n");
+}
+
 // procedimento para criar uma fila
 void criaFila(FilaCF *fila) {
     fila->frente = 0;
@@ -79,6 +88,21 @@ void exibe(FilaCF fila) {
     for (int i = fila.frente; i != fila.re; i = (i + 1) % MAX_NODOS) {
         printf("Cod: %d\nPeso: %.2f\n\n", fila.v[i].cod, fila.v[i].peso);
     }
+}
+
+// função para pesquisar um código existente na fila, sem remover do nodo
+int pesquisaValida(FilaCF fila, int cod) {
+    /*
+        pesquisa de forma circular para saber se o cod inserido no main existe na fila
+    */
+    int i = fila.frente;
+    while (i != fila.re) {
+        if (fila.v[i].cod == cod) {
+            return SUCESSO;
+        }
+        i = (i + 1) % MAX_NODOS;
+    }
+    return DADO_INEXISTENTE;
 }
     
 // função para consultar um dado atraves de um cod
