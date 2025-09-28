@@ -74,7 +74,7 @@ int main(){
                 printf("Digite o código a ser pesquisado: ");
                 scanf("%d", &cod);
 
-                resultado = pesquisa(fila, cod, &dado);
+                resultado = pesquisa(&fila, cod, &dado);
 
                 if (resultado == SUCESSO) {
                     printf("Dado encontrado:\nCod: %d\nPeso: %.2f\n", dado.cod, dado.peso);
