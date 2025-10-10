@@ -118,7 +118,7 @@ int main(){
             if (resultado == LISTA_VAZIA) {
                 printf("\nLista vazia!");
             }
-            else {
+            else if (dado.cod != cod) {
                 printf("\nCódigo não encontrado na lista!");
             }
             break;

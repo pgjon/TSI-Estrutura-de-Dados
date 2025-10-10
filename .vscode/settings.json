@@ -1,7 +1,8 @@
 {
   "files.associations": {
     "stdio.h": "c",
-    "cheque.h": "c"
+    "cheque.h": "c",
+    "pilhase.h": "c"
   },
   "python-envs.defaultEnvManager": "ms-python.python:system",
   "python-envs.pythonProjects": []
