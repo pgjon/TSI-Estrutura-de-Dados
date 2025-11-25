@@ -1,10 +1,11 @@
 {
-  "files.associations": {
-    "stdio.h": "c",
-    "cheque.h": "c",
-    "pilhase.h": "c",
-    "locale.h": "c"
-  },
-  "python-envs.defaultEnvManager": "ms-python.python:system",
-  "python-envs.pythonProjects": []
+    "files.associations": {
+        "stdio.h": "c",
+        "cheque.h": "c",
+        "pilhase.h": "c",
+        "locale.h": "c",
+        "stdlib.h": "c"
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": []
 }
