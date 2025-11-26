@@ -1,0 +1,36 @@
+# Nome do executável final
+TARGET = "ListaDE - Jones Rodrigues.exe"
+
+# Compilador C
+CC = gcc
+
+# Flags de compilação (opções para o compilador)
+# -Wall: Ativa todos os warnings
+# -g: Inclui informações de debug (útil para depuradores)
+# -std=c99: Usa o padrão C99 (ou c11, c17, etc.)
+CFLAGS = -Wall -g -std=c99
+
+# Arquivos objeto (arquivos .o gerados a partir dos .c)
+# $(patsubst %.c,%.o,$(wildcard *.c)) encontra todos os .c e os transforma em .o
+OBJS = ListaDE.o main.o
+
+# Regra principal: "all" é o alvo padrão.
+# Ele depende do executável final.
+all: $(TARGET)
+
+# Regra para criar o executável final
+# O executável depende dos arquivos objeto.
+# $<: o primeiro pré-requisito (todos os .o)
+# $@: o nome do alvo (o executável)
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $@
+
+# Regra genérica para compilar arquivos .c em .o
+# %.o: %.c significa "qualquer arquivo .o depende do seu .c correspondente"
+# -c: compila o .c para .o sem linkar
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Regra para limpar os arquivos gerados (executável e objetos)
+clean:
+	rm -f $(OBJS) $(TARGET)

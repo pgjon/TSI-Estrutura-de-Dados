@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <windows.h>
 
+// Constantes de retorno
 #define SUCESSO 0
 #define LISTA_VAZIA 1
 #define FALTOU_MEMORIA 2
@@ -26,7 +28,8 @@ typedef struct {
 // Funções iniciais
 void criaLista (ListaDE *lista);
 int estaVazia (ListaDE lista);
-int consultaPorCodigo (ListaDE lista, int cod);
+int consultaPorCodigo (ListaDE lista, Dado *dado, int cod);
+int lerDadosValidos (ListaDE *lista, Dado *dado);
 
 // Funções para incluir um Nodo
 int incluiNoInicio (ListaDE *lista, Dado dado);
@@ -46,17 +49,12 @@ void exibeSituacaoDaLista (ListaDE lista);
 void gravarArquivoTexto (char *nomeArquivo, ListaDE *lista);
 void lerArquivoTexto (char *nomeArquivo, ListaDE *lista);
 
-
-
-
-
-
 // ########################## MAIN ##########################
 int main () {
     system("chcp 65001 > nul");
     setlocale(LC_ALL, "pt_BR.UTF-8");
 
-    int opcao, cod, resultado;
+    int opcao, cod, resultado, codRef;
     ListaDE lista;
     Dado dado;
 
@@ -78,74 +76,126 @@ int main () {
         scanf("%d", &opcao);
 
         switch (opcao) {
+        case 0: // Encerra o programa
+            printf("\nAté mais! Saindo do programa");
+            fflush(stdout); // força imprimir antes do sleep
+
+            for (int i = 0; i < 3; i++) {
+                printf(".");
+                fflush(stdout);
+                Sleep(1000); // espera de 1000ms = 1s
+            }
+            break;
+
         case 1: // Inclui no Inicio
-            
+            lerDadosValidos(&lista, &dado);
+            resultado = incluiNoInicio(&lista, dado);
+
+            if (resultado == SUCESSO) {
+                printf("\nNodo incluído com SUCESSO!\n");
+            }
             break;
         
         case 2: // Inclui no Fim
-            
+            lerDadosValidos(&lista, &dado);
+            resultado = incluiNoFim(&lista, dado);
+
+            if (resultado == SUCESSO) {
+                printf("\nNodo incluído com SUCESSO!\n");
+            }
             break;
         
         case 3: // Inclui Depois
-            
+            printf("\nDigite o código do Nodo de referência: ");
+            scanf("%d", &codRef);
+
+            lerDadosValidos(&lista, &dado);
+            resultado = incluiDepois(&lista, dado, codRef);
+
+            if (resultado == LISTA_VAZIA) {
+                printf("\nLista vazia! Impossível incluir depois.");
+            } else if (resultado == CODIGO_INEXISTENTE) {
+                printf("\nCódigo de referência não encontrado na Lista!");
+            } else {
+                printf("\nNodo incluído com SUCESSO!\n");
+            }
             break;
         
         case 4: // Exibe Lista
-            
+            exibeLista(lista);
             break;
         
         case 5: // Exclui do Inicio
-            
+            resultado = excluiNoInicio(&lista, &dado);
+
+            if (resultado == LISTA_VAZIA) {
+                printf("\nLista vazia! Impossível excluir.");
+            } else {
+                printf("\nNodo excluído com SUCESSO!\n");
+            }
             break;
         
         case 6: // Exclui do Fim
-            
+            resultado = excluiNoFim(&lista, &dado);
+            if (resultado == LISTA_VAZIA) {
+                printf("\nLista vazia! Impossível excluir.");
+            } else {
+                printf("\nNodo excluído com SUCESSO!\n");
+            }
             break;
         
         case 7: // Exclui Nodo
-            
+            printf("\nDigite o código do Nodo a ser excluido: ");
+            scanf("%d", &cod);
+            resultado = excluiNodo(&lista, &dado, cod);
+    
+            if (resultado == LISTA_VAZIA) {
+                printf("\nLista vazia!\n");
+            } else if (resultado == CODIGO_INEXISTENTE) {
+                printf("\nCódigo não encontrado!\n");
+            } else {
+                printf("\nNodo excluído com SUCESSO!\n");
+            }
             break;
         
         case 8: // Quantidade de Nodos
-            
+            printf("\nQuantidade de Nodos: %d", lista.n);
             break;
         
         case 9: // Exibe Situação da Lista
-            
+            exibeSituacaoDaLista(lista);
             break;
         
         case 10: // Consulta por Código
-            
+            printf("\nDigite o código do Nodo a ser pesquisado: ");
+            scanf("%d", &cod);
+            resultado = consultaPorCodigo(lista, &dado, cod);
+
+            if (resultado == LISTA_VAZIA) {
+                printf("\nLista vazia!");
+            } else if (resultado == CODIGO_INEXISTENTE) {
+                printf("\nCódigo não encontrado na Lista!");
+            } else {
+                printf("\nCod: %d\nPeso: %.2f", dado.cod, dado.peso);
+            }
             break;
         
         case 11: // Gravar em Arquivo de Texto
-            
+            gravarArquivoTexto("dados-ListaDE.txt", &lista);
             break;
         
         case 12: // Ler de Arquivo de Texto
-            
+            lerArquivoTexto("dados-ListaDE.txt", &lista);
             break;
         
         default: // Opção inválida
-            printf("\nOpção inválida!");
+            printf("\nOpção inválida!\n");
             break;
         }
     } while (opcao != 0);
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ######################### Funções iniciais ######################### 
 void criaLista (ListaDE *lista) {
@@ -161,31 +211,53 @@ int estaVazia (ListaDE lista) {
     return SUCESSO;
 }
 
-int consultaPorCodigo (ListaDE lista, int cod) {
+int consultaPorCodigo (ListaDE lista, Dado *dado, int cod) {
     if (estaVazia(lista) == LISTA_VAZIA) {
         return LISTA_VAZIA;
     }
 
     Nodo *aux = lista.inicio;
 
-    while(aux != NULL && aux->info.cod != cod) {
+    while(aux != NULL) {
+        if (aux->info.cod == cod) {
+            *dado = aux->info;
+            return SUCESSO;
+        }
         aux = aux->prox;
     }
-    
-    if (aux == NULL) {
-        return CODIGO_INEXISTENTE;
-    }
+        
+    return CODIGO_INEXISTENTE;
+}
 
-    printf("\nCod: %d\nPeso: %.2f", aux->info.cod, aux->info.peso);
+int lerDadosValidos (ListaDE *lista, Dado *dado) {
+    int resultado, cod;
+    // repetição para conferir se existe código na lista
+    do {
+        printf("\nDigite o código a ser inserido: ");
+        scanf("%d", &cod);
+
+        resultado = consultaPorCodigo(*lista, dado, cod);
+
+        if (resultado == CODIGO_INEXISTENTE || resultado == LISTA_VAZIA) {
+            break;
+        } else {
+            printf("\nCódigo já existe na Lista!");
+        }
+    } while (1);
+    
+    dado->cod = cod;
+
+    printf("Digite o peso: ");
+    scanf("%f", &dado->peso);
+
     return SUCESSO;
 }
+
 // ######################### Fim Funções iniciais ######################### 
 
 // ######################### Funções para incluir um Nodo ######################### 
 int incluiNoInicio (ListaDE *lista, Dado dado) {
-    Nodo *pNodo;
-
-    pNodo = (Nodo *) malloc (sizeof (Nodo));
+    Nodo *pNodo = (Nodo *) malloc (sizeof (Nodo));
 
     if (pNodo == NULL) {
         return FALTOU_MEMORIA;
@@ -207,9 +279,7 @@ int incluiNoInicio (ListaDE *lista, Dado dado) {
 }
 
 int incluiNoFim (ListaDE *lista, Dado dado) {
-    Nodo *pNodo;
-
-    pNodo = (Nodo *) malloc (sizeof (Nodo));
+    Nodo *pNodo = (Nodo *) malloc (sizeof (Nodo));
 
     if (pNodo == NULL) {
         return FALTOU_MEMORIA;
@@ -222,7 +292,7 @@ int incluiNoFim (ListaDE *lista, Dado dado) {
     if (lista->n == 0) {
         lista->inicio = pNodo;
     } else {
-        lista->fim->ant = pNodo;
+        lista->fim->prox = pNodo;
     }
 
     lista->fim = pNodo;
@@ -231,12 +301,17 @@ int incluiNoFim (ListaDE *lista, Dado dado) {
 }
 
 int incluiDepois (ListaDE *lista, Dado dado, int cod) {
+    if (estaVazia(*lista) == LISTA_VAZIA) {
+        return LISTA_VAZIA;
+    }
+
     Nodo *aux = lista->inicio;
-    while(aux->prox != NULL && aux->info.cod != cod) {
+    // Percorre até o fim ou até encontrar o código
+    while(aux != NULL && aux->info.cod != cod) {
         aux = aux->prox;
     }
     
-    if (aux == NULL) {
+    if (aux == NULL) { // Não encontrou o código
         return CODIGO_INEXISTENTE;
     }
 
@@ -253,6 +328,7 @@ int incluiDepois (ListaDE *lista, Dado dado, int cod) {
     if (aux->prox != NULL) {
         aux->prox->ant = pNodo;
     } else {
+        // estava inserindo depois do último
         lista->fim = pNodo;
     }
 
@@ -291,15 +367,14 @@ int excluiNoFim (ListaDE *lista, Dado *dado) {
         return LISTA_VAZIA;
     }
 
-    Nodo *pNodo;
-
+    Nodo *pNodo = lista->fim;
     *dado = lista->fim->info;
-    pNodo = lista->fim;
-    lista->fim = lista->fim->ant;
 
     if (lista->n == 1) {
         lista->inicio = NULL;
+        lista->fim = NULL;
     } else {
+        lista->fim = lista->fim->ant;
         lista->fim->prox = NULL;
     }
 
@@ -364,21 +439,20 @@ int excluiNodo (ListaDE *lista, Dado *dado, int cod) {
 // ######################### Fim Funções para excluir um Nodo ######################### 
 
 // ######################### Funções exibe lista e sua situação ######################### 
-void exibe(ListaDE lista) {
+void exibeLista(ListaDE lista) {
   Nodo *listaAux;
 
   listaAux = lista.inicio;
 
-  printf("\nInicio: %p", lista.inicio);
   printf("\nExibindo Lista:");
-  printf("\nInicio: %p", lista.inicio);
+
   // End = Endereço
   printf("\n[End. Nodo]\t[End. Ant]\t[Cod.]\t[Peso]\t[End. Prox.]");
   while (listaAux != NULL) {
-    printf("\n%p %p %d %.2f %p", listaAux, listaAux->ant, listaAux->info.cod, listaAux->info.peso, listaAux->prox);
+    printf("\n%p\t%p\t%d\t%.2f\t%p", listaAux, listaAux->ant, listaAux->info.cod, listaAux->info.peso, listaAux->prox);
     listaAux = listaAux->prox;
   }
-  printf("\nQuantidade de Nodos - N: %d\nFim: %p", lista.n, lista.fim);
+  printf("\n\nInicio: %p\tN: %d\tFim: %p", lista.inicio, lista.n, lista.fim);
 }
 
 void exibeSituacaoDaLista (ListaDE lista) {
@@ -392,24 +466,20 @@ void exibeSituacaoDaLista (ListaDE lista) {
 
 // ######################### Funções Ler e Gravar dados em arquivo de Texto ######################### 
 void gravarArquivoTexto (char *nomeArquivo, ListaDE *lista) {
-    FILE *arquivo;
-    Nodo *pNodo;
-
-    arquivo = fopen(nomeArquivo, "w"); // abre o arquivo para escrita (sobrescreve)
+    FILE *arquivo = fopen(nomeArquivo, "w"); // abre o arquivo para escrita (sobrescreve)
 
     if (arquivo == NULL) { // verifica se abriu corretamente
         printf("\nNão foi possível abrir o arquivo!");
         return;
     } 
-    pNodo = lista->inicio;
 
-    for (int i = 0; i < lista->n; i++) { // percorre a lista inteira pelo número de nós
-        fprintf(arquivo,    // grava código e peso separados por espaço
-                "\n%d %.2f", 
+    Nodo *pNodo = lista->inicio;
+
+    while (pNodo != NULL) { // percorre a lista inteira pelo número de nós
+        // grava código e peso separados por espaço
+        fprintf(arquivo, " %d %.2f\n", 
                 pNodo->info.cod, 
-                pNodo->info.peso
-        );
-
+                pNodo->info.peso);
         pNodo = pNodo->prox;
     }
     
@@ -418,18 +488,17 @@ void gravarArquivoTexto (char *nomeArquivo, ListaDE *lista) {
 }
 
 void lerArquivoTexto (char *nomeArquivo, ListaDE *lista) {
-    FILE *arquivo;
-    Dado dado;
-    
-    arquivo = fopen(nomeArquivo, "r");
+    FILE *arquivo = fopen(nomeArquivo, "r");
     if (arquivo == NULL) {
         printf("\nNão foi possível abrir o arquivo!");
         return;
     }
 
     criaLista(lista);  // limpa a lista antes de importar
+    Dado dado;
 
-    while (fscanf(arquivo, "%d %.2f", &dado.cod, &dado.peso) == EOF) { // EOF = End of File - fazendo == 2 garante que cada linha lida está correta. 
+    // lê até o final do arquivo
+    while (fscanf(arquivo, "%d %f", &dado.cod, &dado.peso) != EOF) { // EOF = End of File - fazendo == 2 garante que cada linha lida está correta. 
         incluiNoFim(lista, dado);
     }
 
